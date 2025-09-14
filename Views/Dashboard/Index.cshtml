@@ -1,0 +1,188 @@
+@model ExpenseTracker.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="space-y-6">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-8 text-white">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">Chào mừng trở lại! 👋</h1>
+                <p class="text-blue-100 text-lg">Đây là tổng quan tài chính của bạn trong tháng @DateTime.Now.ToString("MM/yyyy")</p>
+            </div>
+            <div class="mt-4 lg:mt-0 text-right">
+                <div class="text-sm text-blue-200">Số dư hiện tại</div>
+                <div class="text-4xl font-bold">@Model.Balance.ToString("N0") VND</div>
+                <div class="text-green-300 text-sm flex items-center justify-end mt-1">
+                    <i class="fas fa-trending-up mr-1"></i>
+                    +5.2% so với tháng trước
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Tổng thu nhập -->
+        <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-100 text-sm">Tổng thu nhập</p>
+                    <p class="text-2xl font-bold">@Model.TotalIncome.ToString("N0") VND</p>
+                    <p class="text-green-200 text-sm mt-1">@Model.IncomeChange</p>
+                </div>
+                <div class="bg-white bg-opacity-20 p-3 rounded-full">
+                    <i class="fas fa-trending-up text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tổng chi tiêu -->
+        <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-2xl p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-red-100 text-sm">Tổng chi tiêu</p>
+                    <p class="text-2xl font-bold">@Model.TotalExpense.ToString("N0") VND</p>
+                    <p class="text-red-200 text-sm mt-1">@Model.ExpenseChange</p>
+                </div>
+                <div class="bg-white bg-opacity-20 p-3 rounded-full">
+                    <i class="fas fa-trending-down text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Số giao dịch -->
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm">Số giao dịch</p>
+                    <p class="text-2xl font-bold">@Model.TransactionCount</p>
+                    <p class="text-blue-200 text-sm mt-1">+12</p>
+                </div>
+                <div class="bg-white bg-opacity-20 p-3 rounded-full">
+                    <i class="fas fa-wallet text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mục tiêu tiết kiệm -->
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-purple-100 text-sm">Mục tiêu tiết kiệm</p>
+                    <p class="text-2xl font-bold">@Model.SavingsGoal</p>
+                    <p class="text-purple-200 text-sm mt-1">Đạt được</p>
+                </div>
+                <div class="bg-white bg-opacity-20 p-3 rounded-full">
+                    <i class="fas fa-bullseye text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Expense Chart -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Chi tiêu 7 ngày qua</h3>
+            <canvas id="expenseChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Category Chart -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Chi tiêu theo danh mục</h3>
+            <canvas id="categoryChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        <h3 class="text-xl font-bold text-gray-900 mb-6">Giao dịch gần đây</h3>
+        <div class="space-y-4">
+            @foreach (var transaction in Model.RecentTransactions)
+            {
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style="background-color: @(transaction.Category?.Color)20;">
+                            @transaction.Category?.Icon
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-900">@transaction.Description</p>
+                            <p class="text-sm text-gray-500">@transaction.Category?.Name • @transaction.Date.ToString("dd/MM/yyyy")</p>
+                        </div>
+                    </div>
+                    <div class="font-bold text-lg @(transaction.Type == "income" ? "text-green-600" : "text-red-600")">
+                        @(transaction.Type == "income" ? "+" : "-")@transaction.Amount.ToString("N0") VND
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Load chart data and render charts
+    fetch('@Url.Action("GetChartData", "Dashboard")')
+        .then(response => response.json())
+        .then(data => {
+            // Expense Chart
+            const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+            new Chart(expenseCtx, {
+                type: 'line',
+                data: {
+                    labels: data.expenseData.map(d => d.date),
+                    datasets: [{
+                        label: 'Chi tiêu (VND)',
+                        data: data.expenseData.map(d => d.amount),
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('vi-VN') + ' VND';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.categoryData.map(d => d.name),
+                    datasets: [{
+                        data: data.categoryData.map(d => d.value),
+                        backgroundColor: data.categoryData.map(d => d.color),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        });
+</script>
+}

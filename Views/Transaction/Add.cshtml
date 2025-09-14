@@ -1,0 +1,138 @@
+@model ExpenseTracker.Models.Transaction
+@{
+    ViewData["Title"] = "Thêm giao dịch";
+}
+
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Thêm giao dịch mới</h1>
+            <p class="text-gray-600">Nhập thông tin giao dịch thu nhập hoặc chi tiêu của bạn</p>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    <span class="text-green-800">@TempData["Success"]</span>
+                </div>
+            </div>
+        }
+
+        <form asp-action="Add" method="post" class="space-y-6">
+            <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm"></div>
+            
+            <!-- Type Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Loại giao dịch</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="relative">
+                        <input asp-for="Type" type="radio" value="income" class="sr-only peer" />
+                        <div class="p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-green-500 peer-checked:bg-green-50 transition-all">
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-arrow-up text-green-500 text-2xl mr-3"></i>
+                                <span class="font-medium text-gray-700 peer-checked:text-green-700">Thu nhập</span>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="relative">
+                        <input asp-for="Type" type="radio" value="expense" class="sr-only peer" />
+                        <div class="p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-red-500 peer-checked:bg-red-50 transition-all">
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-arrow-down text-red-500 text-2xl mr-3"></i>
+                                <span class="font-medium text-gray-700 peer-checked:text-red-700">Chi tiêu</span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+                <span asp-validation-for="Type" class="text-red-600 text-sm"></span>
+            </div>
+
+            <!-- Amount -->
+            <div>
+                <label asp-for="Amount" class="block text-sm font-medium text-gray-700 mb-2">Số tiền (VND)</label>
+                <input asp-for="Amount" type="number" step="1000" min="1" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" placeholder="Nhập số tiền">
+                <span asp-validation-for="Amount" class="text-red-600 text-sm"></span>
+            </div>
+
+            <!-- Category -->
+            <div>
+                <label asp-for="CategoryId" class="block text-sm font-medium text-gray-700 mb-2">Danh mục</label>
+                <select asp-for="CategoryId" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+                    <option value="">Chọn danh mục</option>
+                    @foreach (var category in ViewBag.Categories as List<ExpenseTracker.Models.Category>)
+                    {
+                        <option value="@category.Id" data-type="@category.Type">@category.Icon @category.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="CategoryId" class="text-red-600 text-sm"></span>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label asp-for="Description" class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                <input asp-for="Description" type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" placeholder="Nhập mô tả giao dịch">
+                <span asp-validation-for="Description" class="text-red-600 text-sm"></span>
+            </div>
+
+            <!-- Date -->
+            <div>
+                <label asp-for="Date" class="block text-sm font-medium text-gray-700 mb-2">Ngày giao dịch</label>
+                <input asp-for="Date" type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                <span asp-validation-for="Date" class="text-red-600 text-sm"></span>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex space-x-4 pt-6">
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-save mr-2"></i>Lưu giao dịch
+                </button>
+                <a href="@Url.Action("Index", "Transaction")" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-lg font-medium transition-colors text-center">
+                    <i class="fas fa-times mr-2"></i>Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Filter categories based on transaction type
+    const typeRadios = document.querySelectorAll('input[name="Type"]');
+    const categorySelect = document.querySelector('select[name="CategoryId"]');
+    const allOptions = Array.from(categorySelect.options);
+    
+    function filterCategories() {
+        const selectedType = document.querySelector('input[name="Type"]:checked')?.value;
+        
+        // Clear current options except the first one
+        categorySelect.innerHTML = '<option value="">Chọn danh mục</option>';
+        
+        if (selectedType) {
+            // Add options that match the selected type
+            allOptions.slice(1).forEach(option => {
+                if (option.dataset.type === selectedType) {
+                    categorySelect.appendChild(option.cloneNode(true));
+                }
+            });
+        } else {
+            // Add all options
+            allOptions.slice(1).forEach(option => {
+                categorySelect.appendChild(option.cloneNode(true));
+            });
+        }
+    }
+    
+    typeRadios.forEach(radio => {
+        radio.addEventListener('change', filterCategories);
+    });
+    
+    // Format amount input
+    const amountInput = document.querySelector('input[name="Amount"]');
+    amountInput.addEventListener('input', function() {
+        // Remove non-numeric characters except decimal point
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+</script>
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Quản lý chi tiêu cá nhân</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="flex h-screen">
+            <!-- Sidebar -->
+            <div class="w-64 bg-white shadow-lg border-r border-gray-200">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold text-gray-800">💰 Chi tiêu</h2>
+                </div>
+                <nav class="mt-6">
+                    <a href="@Url.Action("Index", "Dashboard")" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" : "")">
+                        <i class="fas fa-chart-line mr-3"></i>
+                        Dashboard
+                    </a>
+                    <a href="@Url.Action("Index", "Transaction")" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transaction" ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600" : "")">
+                        <i class="fas fa-list mr-3"></i>
+                        Giao dịch
+                    </a>
+                    <a href="@Url.Action("Add", "Transaction")" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-plus mr-3"></i>
+                        Thêm giao dịch
+                    </a>
+                </nav>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="flex-1 flex flex-col">
+                <!-- Header -->
+                <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h1 class="text-2xl font-semibold text-gray-800">@ViewData["Title"]</h1>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-gray-600">Xin chào, @User.Identity.Name</span>
+                            <form asp-controller="Auth" asp-action="Logout" method="post" class="inline">
+                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Đăng xuất
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </header>
+                
+                <!-- Page Content -->
+                <main class="flex-1 p-6 overflow-auto">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="min-h-screen bg-gradient-to-br from-blue-600 to-indigo-700">
+            @RenderBody()
+        </div>
+    }
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
